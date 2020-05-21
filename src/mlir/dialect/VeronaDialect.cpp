@@ -1,12 +1,5 @@
-//===- VeronaDialect.cpp - Verona dialect ---------------*- C++ -*-===//
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // This file is licensed under the MIT license.
-// See https://github.com/microsoft/verona/blob/master/LICENSE for license
-// information.
-// SPDX-License-Identifier: MIT
-//
-//===----------------------------------------------------------------------===//
 
 #include "mlir/IR/StandardTypes.h"
 #include "mlir/IR/DialectImplementation.h"
@@ -29,6 +22,7 @@ VeronaDialect::VeronaDialect(mlir::MLIRContext *context)
       >();
   addTypes<OpaqueType>();
   allowUnknownOperations();
+  allowUnknownTypes();
 }
 
 Type VeronaDialect::parseType(DialectAsmParser &parser) const {

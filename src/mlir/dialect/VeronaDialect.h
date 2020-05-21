@@ -1,20 +1,11 @@
-//===- VeronaDialect.h - Verona dialect -----------------*- C++ -*-===//
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // This file is licensed under the MIT license.
-// See https://github.com/microsoft/verona/blob/master/LICENSE for license
-// information.
-// SPDX-License-Identifier: MIT
-//
-//===----------------------------------------------------------------------===//
 
-#ifndef VERONA_VERONADIALECT_H
-#define VERONA_VERONADIALECT_H
+#pragma once
 
 #include "mlir/IR/Dialect.h"
 
-namespace mlir {
-namespace verona {
+namespace mlir::verona {
 
 namespace VeronaTypes {
 // Needs to be an enum (not an enum class) because 'kindof' methods compare
@@ -46,7 +37,4 @@ public:
   }
 };
 
-} // namespace verona
-} // namespace mlir
-
-#endif // VERONA_VERONADIALECT_H
+} // namespace mlir::verona

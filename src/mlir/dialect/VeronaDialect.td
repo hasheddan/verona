@@ -1,12 +1,5 @@
-//===- VeronaDialect.td - Verona dialect -----------*- tablegen -*-===//
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // This file is licensed under the MIT license.
-// See https://github.com/microsoft/verona/blob/master/LICENSE for license
-// information.
-// SPDX-License-Identifier: MIT
-//
-//===----------------------------------------------------------------------===//
 
 #ifndef VERONA_DIALECT
 #define VERONA_DIALECT

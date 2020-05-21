@@ -50,3 +50,4 @@ add_custom_target("check"
                   USES_TERMINAL COMMAND_EXPAND_LISTS)
 
 add_dependencies("check" "install_for_test")
+add_dependencies("check" "check-verona-mlir")
