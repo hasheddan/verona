@@ -1,13 +1,13 @@
 // RUN: verona-mlir %s -o - | verona-mlir | FileCheck %s
 
 module {
-    // CHECK-LABEL: func @bar()
-    func @bar() {
-        %0 = constant 1 : i32
-        // CHECK: %{{.*}} = verona.foo %{{.*}} : i32
-        %res = verona.foo %0 : i32
-        // CHECK: %{{.*}} = "verona.test"(%{{.*}}) : (i32) -> ({{.*}})
-        %foo = "verona.test"(%res) : (i32) -> (!verona<"U64_imm">)
-        return
-    }
+  // CHECK: func @bar(%arg0: !verona.U64) -> !type<"U64 & imm"> {
+  func @bar(%arg0: !verona.U64) -> !type<"U64 & imm"> {
+    // CHECK: %[[res:[0-9]+]] = verona.foo %arg0 : !verona.U64
+    %res = verona.foo %arg0 : !verona.U64
+    // CHECK: %[[foo:[0-9]+]] = "verona.test"(%[[res]]) : (!verona.U64) -> !type<"U64 & imm">
+    %foo = "verona.test"(%res) : (!verona.U64) -> (!type<"U64 & imm">)
+    // CHECK: return %[[foo]] : !type<"U64 & imm">
+    return %foo : !type<"U64 & imm">
+  }
 }

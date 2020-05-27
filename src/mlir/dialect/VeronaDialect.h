@@ -7,33 +7,30 @@
 
 namespace mlir::verona {
 
+namespace detail {
+  struct IntegerTypeStorage;
+} // namespace detail
+
 namespace VeronaTypes {
 // Needs to be an enum (not an enum class) because 'kindof' methods compare
 // unsigned values and not class values.
 enum Kind {
-  Opaque
+  Integer = Type::Kind::FIRST_PRIVATE_EXPERIMENTAL_0_TYPE
 };
 } // namespace VeronaTypes
 
 #include "dialect/VeronaOpsDialect.h.inc"
 
-class OpaqueType : public Type::TypeBase<OpaqueType, Type> {
-  std::string desc;
-public:
+struct IntegerType : public Type::TypeBase<IntegerType, Type, detail::IntegerTypeStorage> {
   using Base::Base;
 
-  static OpaqueType get(MLIRContext *context, StringRef desc) {
-    auto type = Base::get(context, VeronaTypes::Kind::Opaque);
-    type.desc = desc;
-    return type;
-  }
+  static IntegerType get(MLIRContext *context, size_t width, unsigned sign);
 
-  StringRef getDescription() const {
-    return desc;
-  }
+  size_t getWidth() const;
+  bool getSign() const;
 
   static bool kindof(unsigned kind) {
-    return kind == VeronaTypes::Opaque;
+    return kind == VeronaTypes::Integer;
   }
 };
 

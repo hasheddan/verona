@@ -26,8 +26,8 @@ def Verona_FooOp : Verona_Op<"foo", [NoSideEffect,
         ```
     }];
 
-    let arguments = (ins I32:$input);
-    let results = (outs I32:$res);
+    let arguments = (ins Verona_Type:$input);
+    let results = (outs Verona_Type:$res);
 
     let assemblyFormat = [{
         $input attr-dict `:` type($input)
