@@ -117,7 +117,6 @@ int main(int argc, char** argv)
 
   // MLIR Context
   mlir::MLIRContext context;
-  context.allowUnregisteredDialects();
 
   // Parse cmd-line options
   auto opt = parse(argc, argv);

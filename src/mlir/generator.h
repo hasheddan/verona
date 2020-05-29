@@ -5,28 +5,86 @@
 
 #include "ast/ast.h"
 #include "mlir/IR/Builders.h"
+#include "mlir/IR/Function.h"
 #include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/Module.h"
 #include "mlir/Target/LLVMIR.h"
+
+#include "llvm/ADT/ScopedHashTable.h"
 
 #include <string>
 
 namespace mlir::verona
 {
-  class Generator
+  struct Generator
   {
+    Generator() : builder(&context), UNK(builder.getUnknownLoc())
+    {
+      context.allowUnregisteredDialects();
+    }
+
+    // Read AST/MLIR into the opaque MLIR format
+    void readAST(const ::ast::Ast& ast);
+    void readMLIR(const std::string& filename);
+
+    // Transform the opaque MLIR format into Verona dialect and LLVM IR.
+    mlir::ModuleOp
+    emitMLIR(const llvm::StringRef filename = "", unsigned optLevel = 0);
+    std::unique_ptr<llvm::Module>
+    emitLLVM(const llvm::StringRef filename = "", unsigned optLevel = 0);
+
+  private:
+    // MLIR module, builder and context.
     mlir::OwningModuleRef module;
     mlir::OpBuilder builder;
     mlir::MLIRContext context;
+
+    // Unknown location for testing.
     mlir::Location UNK;
 
-  public:
-    Generator() : builder(&context), UNK(builder.getUnknownLoc()) {}
-    void readAST(::ast::Ast& ast);
-    void readMLIR(std::string& filename);
-    mlir::ModuleOp
-    emitMLIR(llvm::StringRef filename = "", unsigned optLevel = 0);
-    std::unique_ptr<llvm::Module>
-    emitLLVM(llvm::StringRef filename = "", unsigned optLevel = 0);
+    // The symbol table has all declared symbols (with the original node
+    // and the MLIR ounterpart) in a scope. Creating a new scope makes
+    // all future insertions happen at that level, destroying it pops
+    // the scope out of the stack.
+    struct Symbol
+    {
+      mlir::Value val;
+      ::ast::Ast* node;
+    };
+    using SymbolTableT = llvm::ScopedHashTable<llvm::StringRef, Symbol>;
+    // This is the root scope. New scopes are created by creating a new
+    // local variable like:
+    //   SymbolTableT var_scope(symbolTable);
+    // The destructor pops the scope automatically.
+    SymbolTableT symbolTable;
+
+    // Parses a module, the global context.
+    mlir::ModuleOp parseModule(const ::ast::Ast& ast);
+
+    // Parses a function, from a top-level (module) view.
+    mlir::FuncOp parseFunction(const ::ast::Ast& ast);
+
+    // Parses a global variable, from a top-level (module) view.
+    mlir::Value parseGlobal(const ::ast::Ast& ast);
+
+    // Recursive type parser, gathers all available information on the type
+    // and sub-types, modifiers, annotations, etc.
+    mlir::Type parseType(const ::ast::Ast& ast);
+
+    // Declare a program variable on the current scope (via symbolTable).
+    void declareVariable(const ::ast::Ast& ast, mlir::Value);
+
+    // Declares a compiler variable, for auto-gen code.
+    void declareVariable(llvm::StringRef name, mlir::Value);
+
+    // Generic node parser, calls other parse functions to handle each
+    // individual type.
+    mlir::Value parseNode(const ::ast::Ast& ast);
+
+    // Specific parsers (there will be more).
+    mlir::Value parseOperation(const ::ast::Ast& ast);
+    mlir::Value parseCall(const ::ast::Ast& ast);
+    mlir::Value parseLet(const ::ast::Ast& ast);
+    mlir::Value parseReturn(const ::ast::Ast& ast);
   };
 }

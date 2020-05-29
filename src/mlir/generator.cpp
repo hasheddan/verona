@@ -27,13 +27,13 @@
 
 namespace mlir::verona
 {
-  void Generator::readAST(::ast::Ast& ast)
+  void Generator::readAST(const ::ast::Ast& ast)
   {
     // TODO: Convert AST into MLIR module
     throw std::runtime_error("Parsing AST not implemented yet");
   }
 
-  void Generator::readMLIR(std::string& filename)
+  void Generator::readMLIR(const std::string& filename)
   {
     // Read an MLIR file
     llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> srcOrErr =
