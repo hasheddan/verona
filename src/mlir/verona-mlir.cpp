@@ -2,14 +2,14 @@
 // This file is licensed under the MIT license.
 
 #include "CLI/CLI.hpp"
-#include "ast/ast.h"
-#include "ast/cli.h"
-#include "ast/files.h"
 #include "ast/parser.h"
 #include "ast/path.h"
-#include "ast/sym.h"
 #include "dialect/VeronaDialect.h"
 #include "generator.h"
+#include "mlir/InitAllDialects.h"
+#include "mlir/InitAllPasses.h"
+
+#include "llvm/Support/InitLLVM.h"
 
 namespace
 {

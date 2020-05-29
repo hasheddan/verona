@@ -3,6 +3,28 @@
 
 #include "generator.h"
 
+#include "ast/cli.h"
+#include "ast/files.h"
+#include "ast/parser.h"
+#include "ast/path.h"
+#include "ast/sym.h"
+#include "dialect/VeronaDialect.h"
+#include "mlir/Conversion/StandardToLLVM/ConvertStandardToLLVMPass.h"
+#include "mlir/Dialect/StandardOps/IR/Ops.h"
+#include "mlir/IR/Attributes.h"
+#include "mlir/IR/Dialect.h"
+#include "mlir/IR/StandardTypes.h"
+#include "mlir/IR/Verifier.h"
+#include "mlir/Parser.h"
+#include "mlir/Pass/Pass.h"
+#include "mlir/Pass/PassManager.h"
+#include "mlir/Support/FileUtilities.h"
+#include "mlir/Transforms/Passes.h"
+
+#include "llvm/IR/Module.h"
+#include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/ToolOutputFile.h"
+
 namespace mlir::verona
 {
   void Generator::readAST(::ast::Ast& ast)
