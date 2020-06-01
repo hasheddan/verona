@@ -11,6 +11,6 @@ add_lit_testsuite(check-verona-mlir "Running the verona-mlir regression tests"
         ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS ${VERONA_OPT_TEST_DEPENDS}
         )
-set_target_properties(check-verona-mlir PROPERTIES FOLDER "Tests")
+      set_target_properties(check-verona-mlir PROPERTIES FOLDER "Tests" DEPENDS install)
 
 add_lit_testsuites(VERONA_OPT ${CMAKE_CURRENT_SOURCE_DIR} DEPENDS ${VERONA_OPT_TEST_DEPENDS})

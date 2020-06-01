@@ -1,13 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // This file is licensed under the MIT license.
 
+#include "ast-utils.h"
 #include "generator.h"
 
-#include "ast/cli.h"
-#include "ast/files.h"
-#include "ast/parser.h"
-#include "ast/path.h"
-#include "ast/sym.h"
 #include "dialect/VeronaDialect.h"
 #include "mlir/Conversion/StandardToLLVM/ConvertStandardToLLVMPass.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
@@ -15,6 +11,7 @@
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/StandardTypes.h"
 #include "mlir/IR/Verifier.h"
+#include "mlir/IR/Types.h"
 #include "mlir/Parser.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Pass/PassManager.h"
@@ -111,49 +108,49 @@ namespace mlir::verona
   }
 
   // ===================================================== AST -> MLIR
-  // Helpers
-  const ::ast::Ast& findNode(const ::ast::Ast& node, unsigned int tag) {
-    assert(!node->is_token && "Bad node");
-    // FIXME: Is there a better way of doing this?
-    for (auto sub: node->nodes)
-    {
-      if (sub->tag == tag)
-        return sub;
-    }
-    llvm_unreachable("Sub-node not found");
+  mlir::Location Generator::getLocation(const ::ast::Ast& ast)
+  {
+    return builder.getFileLineColLoc(Identifier::get(ast->path, &context), ast->line, ast->column);
   }
 
-  // Generation
+  mlir::Type Generator::parseType(const ::ast::Ast& ast)
+  {
+    auto dialect = Identifier::get("type", &context);
+    auto desc = getTypeDesc(ast);
+    return mlir::OpaqueType::get(dialect, desc, &context);
+  }
+
   void Generator::parseModule(const ::ast::Ast& ast)
   {
     assert(ast->tag == NodeType::Module && "Bad node");
-    module = mlir::ModuleOp::create(UNK);
+    module = mlir::ModuleOp::create(getLocation(ast));
     // TODO: Support more than just functions at the module level
     for (auto fun: ast->nodes)
-    {
       module->push_back(parseFunction(fun));
-    }
   }
 
   mlir::FuncOp Generator::parseFunction(const ::ast::Ast& ast)
   {
     assert(ast->tag == NodeType::Function && "Bad node");
-    // Get function name
-    auto name = findNode(findNode(ast, NodeType::FuncName), NodeType::ID);
 
     // Function type from signature
-    llvm::SmallVector<mlir::Type, 1> argTypes;
-    mlir::Type voidTy{};
-    auto funcTy = builder.getFunctionType(argTypes, voidTy);
+    Types types;
+    auto args = getFunctionArgs(ast);
+    for (auto argTy: args)
+      types.push_back(parseType(getType(argTy).lock()));
+    auto retTy = parseType(getFunctionType(ast).lock());
+    auto funcTy = builder.getFunctionType(types, retTy);
 
     // Create function
-    auto func = mlir::FuncOp::create(UNK, name->name, funcTy);
+    auto name = getFunctionName(ast);
+    auto func = mlir::FuncOp::create(getLocation(ast), name, funcTy);
 
     // TODO: lower body
+    auto body = getFunctionBody(ast);
     //auto &entryBlock = *func.addEntryBlock();
     //builder.setInsertionPointToStart(&entryBlock);
     //auto last = buildNode(def->getImpl());
-    //builder.create<mlir::ReturnOp>(UNK, last);
+    //builder.create<mlir::ReturnOp>(getLocation(ast), last);
 
     return func;
   }

@@ -11,32 +11,18 @@
 #include "mlir/Target/LLVMIR.h"
 
 #include "llvm/ADT/ScopedHashTable.h"
+#include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/StringRef.h"
 
 #include <peglib.h>
 #include <string>
-
-namespace {
-  // We need this becayse the ""_ operator doens't stack well outside of the
-  // peg namespace, so we need to call str2tag directly. Easier to do so in a
-  // constexpr enum type creation and let the rest be unsigned comparisons.
-  // The AST code needs to be flexible, so using the operator directly is more
-  // convenient. But we need to be very strict (with MLIR generation), so this
-  // also creates an additional layer of security.
-  enum NodeType {
-    None = 0,
-    Module = peg::str2tag("module"),
-    Function = peg::str2tag("function"),
-    FuncName = peg::str2tag("funcname"),
-    ID = peg::str2tag("id"),
-    // TODO: Add all
-  };
-} // anonymous namespace
 
 namespace mlir::verona
 {
   struct Generator
   {
-    Generator() : builder(&context), UNK(builder.getUnknownLoc())
+    Generator() : builder(&context)
     {
       context.allowUnregisteredDialects();
     }
@@ -51,14 +37,14 @@ namespace mlir::verona
     std::unique_ptr<llvm::Module>
     emitLLVM(const llvm::StringRef filename = "", unsigned optLevel = 0);
 
+    using Types = llvm::SmallVector<mlir::Type, 4>;
+    using Values = llvm::SmallVector<mlir::Value, 4>;
+
   private:
     // MLIR module, builder and context.
     mlir::OwningModuleRef module;
     mlir::OpBuilder builder;
     mlir::MLIRContext context;
-
-    // Unknown location for testing.
-    mlir::Location UNK;
 
     // The symbol table has all declared symbols (with the original node
     // and the MLIR ounterpart) in a scope. Creating a new scope makes
@@ -75,6 +61,9 @@ namespace mlir::verona
     //   SymbolTableT var_scope(symbolTable);
     // The destructor pops the scope automatically.
     SymbolTableT symbolTable;
+
+    // Get location of an ast node
+    mlir::Location getLocation(const ::ast::Ast& ast);
 
     // Parses a module, the global context.
     void parseModule(const ::ast::Ast& ast);

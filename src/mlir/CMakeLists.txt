@@ -51,7 +51,7 @@ set(LIBS
         MLIRTargetLLVMIR
         verona-ast-lib
         )
-add_llvm_executable(verona-mlir verona-mlir.cpp generator.cpp)
+add_llvm_executable(verona-mlir verona-mlir.cc generator.cc ast-utils.cc)
 
 llvm_update_compile_flags(verona-mlir)
 target_link_libraries(verona-mlir PRIVATE ${LIBS} CLI11::CLI11)

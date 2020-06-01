@@ -1,0 +1,17 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+// RUN: verona-mlir %s -o - | FileCheck %s
+
+// CHECK: func @foo(!type.N, !type<"U64&imm">) -> !type.R
+foo(a: N, b: U64 & imm): R
+  where N: imm
+  where R: U64 & imm
+{
+  let x = a + b;
+  let r: R = x;
+  x
+}
+
+// CHECK: func @apply() -> !type.void
+(){}
