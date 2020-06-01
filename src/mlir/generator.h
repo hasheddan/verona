@@ -12,7 +12,25 @@
 
 #include "llvm/ADT/ScopedHashTable.h"
 
+#include <peglib.h>
 #include <string>
+
+namespace {
+  // We need this becayse the ""_ operator doens't stack well outside of the
+  // peg namespace, so we need to call str2tag directly. Easier to do so in a
+  // constexpr enum type creation and let the rest be unsigned comparisons.
+  // The AST code needs to be flexible, so using the operator directly is more
+  // convenient. But we need to be very strict (with MLIR generation), so this
+  // also creates an additional layer of security.
+  enum NodeType {
+    None = 0,
+    Module = peg::str2tag("module"),
+    Function = peg::str2tag("function"),
+    FuncName = peg::str2tag("funcname"),
+    ID = peg::str2tag("id"),
+    // TODO: Add all
+  };
+} // anonymous namespace
 
 namespace mlir::verona
 {
@@ -59,7 +77,7 @@ namespace mlir::verona
     SymbolTableT symbolTable;
 
     // Parses a module, the global context.
-    mlir::ModuleOp parseModule(const ::ast::Ast& ast);
+    void parseModule(const ::ast::Ast& ast);
 
     // Parses a function, from a top-level (module) view.
     mlir::FuncOp parseFunction(const ::ast::Ast& ast);

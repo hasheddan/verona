@@ -27,10 +27,16 @@
 
 namespace mlir::verona
 {
+  // ===================================================== Public Interface
   void Generator::readAST(const ::ast::Ast& ast)
   {
-    // TODO: Convert AST into MLIR module
-    throw std::runtime_error("Parsing AST not implemented yet");
+    parseModule(ast);
+    // On error, dump module for debug purposes
+    if (mlir::failed(mlir::verify(*module)))
+    {
+      module->dump();
+      throw std::runtime_error("Failed to parse Verona file");
+    }
   }
 
   void Generator::readMLIR(const std::string& filename)
@@ -102,5 +108,53 @@ namespace mlir::verona
 
     llvm->print(out, nullptr);
     return llvm;
+  }
+
+  // ===================================================== AST -> MLIR
+  // Helpers
+  const ::ast::Ast& findNode(const ::ast::Ast& node, unsigned int tag) {
+    assert(!node->is_token && "Bad node");
+    // FIXME: Is there a better way of doing this?
+    for (auto sub: node->nodes)
+    {
+      if (sub->tag == tag)
+        return sub;
+    }
+    llvm_unreachable("Sub-node not found");
+  }
+
+  // Generation
+  void Generator::parseModule(const ::ast::Ast& ast)
+  {
+    assert(ast->tag == NodeType::Module && "Bad node");
+    module = mlir::ModuleOp::create(UNK);
+    // TODO: Support more than just functions at the module level
+    for (auto fun: ast->nodes)
+    {
+      module->push_back(parseFunction(fun));
+    }
+  }
+
+  mlir::FuncOp Generator::parseFunction(const ::ast::Ast& ast)
+  {
+    assert(ast->tag == NodeType::Function && "Bad node");
+    // Get function name
+    auto name = findNode(findNode(ast, NodeType::FuncName), NodeType::ID);
+
+    // Function type from signature
+    llvm::SmallVector<mlir::Type, 1> argTypes;
+    mlir::Type voidTy{};
+    auto funcTy = builder.getFunctionType(argTypes, voidTy);
+
+    // Create function
+    auto func = mlir::FuncOp::create(UNK, name->name, funcTy);
+
+    // TODO: lower body
+    //auto &entryBlock = *func.addEntryBlock();
+    //builder.setInsertionPointToStart(&entryBlock);
+    //auto last = buildNode(def->getImpl());
+    //builder.create<mlir::ReturnOp>(UNK, last);
+
+    return func;
   }
 }
