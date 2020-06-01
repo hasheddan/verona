@@ -5,7 +5,7 @@
 #define VERONA_OPS
 
 include "VeronaDialect.td"
-include "mlir/Interfaces/SideEffects.td"
+include "mlir/Interfaces/SideEffectInterfaces.td"
 
 def Verona_FooOp : Verona_Op<"foo", [NoSideEffect,
                                              SameOperandsAndResultType]> {
