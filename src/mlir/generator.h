@@ -9,10 +9,9 @@
 #include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/Module.h"
 #include "mlir/Target/LLVMIR.h"
+#include "symbol.h"
 
-#include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/SmallVector.h"
-#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/StringRef.h"
 
 #include <peglib.h>
@@ -46,21 +45,9 @@ namespace mlir::verona
     mlir::OpBuilder builder;
     mlir::MLIRContext context;
 
-    // The symbol table has all declared symbols (with the original node
-    // and the MLIR ounterpart) in a scope. Creating a new scope makes
-    // all future insertions happen at that level, destroying it pops
-    // the scope out of the stack.
-    struct Symbol
-    {
-      mlir::Value val;
-      ::ast::Ast* node;
-    };
-    using SymbolTableT = llvm::ScopedHashTable<llvm::StringRef, Symbol>;
-    // This is the root scope. New scopes are created by creating a new
-    // local variable like:
-    //   SymbolTableT var_scope(symbolTable);
-    // The destructor pops the scope automatically.
+    // Symbol tables for variables, functions and classes.
     SymbolTableT symbolTable;
+    FunctionTableT functionTable;
 
     // Get location of an ast node
     mlir::Location getLocation(const ::ast::Ast& ast);
@@ -69,6 +56,7 @@ namespace mlir::verona
     void parseModule(const ::ast::Ast& ast);
 
     // Parses a function, from a top-level (module) view.
+    mlir::FuncOp parseProto(const ::ast::Ast& ast);
     mlir::FuncOp parseFunction(const ::ast::Ast& ast);
 
     // Parses a global variable, from a top-level (module) view.
@@ -78,20 +66,26 @@ namespace mlir::verona
     // and sub-types, modifiers, annotations, etc.
     mlir::Type parseType(const ::ast::Ast& ast);
 
-    // Declare a program variable on the current scope (via symbolTable).
-    void declareVariable(const ::ast::Ast& ast, mlir::Value);
+    // Declares/Updates a variable.
+    void declareVariable(llvm::StringRef name, mlir::Value val);
+    void updateVariable(llvm::StringRef name, mlir::Value val);
 
-    // Declares a compiler variable, for auto-gen code.
-    void declareVariable(llvm::StringRef name, mlir::Value);
-
-    // Generic node parser, calls other parse functions to handle each
-    // individual type.
+    // Generic block/node parser, calls other parse functions to handle each
+    // individual type. Block returns last value, for return.
+    mlir::Value parseBlock(const ::ast::Ast& ast);
     mlir::Value parseNode(const ::ast::Ast& ast);
+    mlir::Value parseValue(const ::ast::Ast& ast);
 
     // Specific parsers (there will be more).
-    mlir::Value parseOperation(const ::ast::Ast& ast);
+    mlir::Value parseAssign(const ::ast::Ast& ast);
     mlir::Value parseCall(const ::ast::Ast& ast);
     mlir::Value parseLet(const ::ast::Ast& ast);
-    mlir::Value parseReturn(const ::ast::Ast& ast);
+
+    // Wrappers for unary/binary operands
+    mlir::Value genOperation(
+      mlir::Location loc,
+      llvm::StringRef name,
+      llvm::ArrayRef<mlir::Value> ops,
+      mlir::Type retTy);
   };
 }

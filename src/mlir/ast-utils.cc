@@ -2,10 +2,11 @@
 // This file is licensed under the MIT license.
 
 #include "ast-utils.h"
+#include "symbol.h"
 
 namespace mlir::verona
 {
-  ::ast::WeakAst findNode(::ast::WeakAst ast, NodeType type)
+  ::ast::WeakAst findNode(::ast::WeakAst ast, NodeType::Int type)
   {
     auto ptr = ast.lock();
     assert(!ptr->is_token && "Bad node");
@@ -18,7 +19,7 @@ namespace mlir::verona
     return *sub;
   }
 
-  const std::string getTokenValue(::ast::WeakAst ast)
+  llvm::StringRef getTokenValue(::ast::WeakAst ast)
   {
     auto ptr = ast.lock();
     assert(ptr->is_token && "Bad node");
@@ -36,7 +37,7 @@ namespace mlir::verona
     auto ptr = ast.lock();
     assert(ptr->tag == NodeType::OfType && "Bad node");
     if (ptr->nodes.empty())
-      return "void";
+      return "";
 
     std::string desc;
     // This undoes the work that the ast did to split the types
@@ -60,15 +61,14 @@ namespace mlir::verona
     return desc;
   }
 
-  const std::string getFunctionName(::ast::WeakAst ast)
+  llvm::StringRef getFunctionName(::ast::WeakAst ast)
   {
     auto ptr = ast.lock();
     assert(ptr->tag == NodeType::Function && "Bad node");
 
     // Empty function name is "apply"
     auto funcname = findNode(ptr, NodeType::FuncName).lock();
-    if (funcname->nodes.empty())
-      return "apply";
+    assert(!funcname->nodes.empty() && "Bad function");
 
     // Else, get function name
     assert(funcname->nodes.size() == 1);

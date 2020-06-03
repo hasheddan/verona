@@ -4,6 +4,8 @@
 #include "CLI/CLI.hpp"
 #include "ast/parser.h"
 #include "ast/path.h"
+#include "ast/sym.h"
+#include "ast/prec.h"
 #include "dialect/VeronaDialect.h"
 #include "generator.h"
 #include "mlir/InitAllDialects.h"
@@ -137,12 +139,20 @@ int main(int argc, char** argv)
   {
     case Source::VERONA:
     {
+      // Parse the file
       auto parser = parser::create(opt.grammar);
       auto ast = parser::parse(parser, opt.filename);
-      if (!ast)
+      // Cleanup the AST
+      err::Errors err;
+      sym::scope(ast, err);
+      if (err.empty())
+        sym::references(ast, err);
+      if (err.empty())
+        prec::build(ast, err);
+      if (!err.empty())
       {
         std::cerr << "ERROR: cannot parse Verona file " << filename.str()
-                  << std::endl;
+                  << std::endl << err.to_s() << std::endl;
         return 1;
       }
       // Parse AST file into MLIR

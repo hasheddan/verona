@@ -3,15 +3,21 @@
 
 // RUN: verona-mlir %s -o - | FileCheck %s
 
-// CHECK: func @foo(!type.N, !type<"U64&imm">) -> !type.R
+// CHECK: func @foo(%arg0: !type.N, %arg1: !type<"U64&imm">) -> !type.R {
 foo(a: N, b: U64 & imm): R
   where N: imm
   where R: U64 & imm
 {
+  // CHECK: "verona.add"(%arg0, %arg1) : (!type.N, !type<"U64&imm">) -> !type.ret
   let x = a + b;
+  // This is just an alias to x
   let r: R = x;
+  // CHECK: "verona.cast"(%{{.*}}) : (!type.ret) -> !type.R
+  // CHECK: return %1 : !type.R
   x
 }
 
-// CHECK: func @apply() -> !type.void
+// CHECK: func @apply() -> none
+// CHECK: "verona.none"() : () -> none
+// CHECK: return %{{.*}} : none
 (){}
