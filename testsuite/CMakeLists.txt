@@ -106,6 +106,4 @@ add_custom_target(update-dump COMMAND ${CMAKE_COMMAND}
 
 # Builds the new experimental MLIR based compiler
 # Enable with -DEXPERIMENTAL_MLIR_COMPILER=True
-if(EXPERIMENTAL_MLIR_COMPILER)
-  add_subdirectory(mlir)
-endif()
+add_subdirectory(mlir)

@@ -49,5 +49,6 @@ add_custom_target("check"
                   COMMENT "Run ctest tests"
                   USES_TERMINAL COMMAND_EXPAND_LISTS)
 
+add_dependencies("check" "install_for_test")
 add_dependencies("check-verona-mlir" "install_for_test")
 add_dependencies("check" "check-verona-mlir")

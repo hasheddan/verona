@@ -25,11 +25,6 @@ add_subdirectory(ast)
 add_subdirectory(compiler)
 add_subdirectory(interpreter)
 add_subdirectory(stdlib)
-
-# Builds the new experimental MLIR based compiler
-# Enable with -DEXPERIMENTAL_MLIR_COMPILER=True
-if(EXPERIMENTAL_MLIR_COMPILER)
-  add_subdirectory(mlir)
-endif()
+add_subdirectory(mlir)
 
 clangformat_targets()

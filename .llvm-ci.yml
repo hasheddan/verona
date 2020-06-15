@@ -51,7 +51,7 @@ jobs:
     displayName: 'CMake'
     inputs:
       cmakeArgs: |
-        ../llvm -GNinja -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_CXX_FLAGS=$(CXXFLAGS) -DLLVM_USE_SANITIZER=$(Sanitizer) -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=ON -DLLVM_TARGETS_TO_BUILD="X86" -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_ENABLE_LLD=ON
+        ../llvm -GNinja -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_CXX_FLAGS=$(CXXFLAGS) -DLLVM_USE_SANITIZER=$(Sanitizer) -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_TARGETS_TO_BUILD="X86" -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_ENABLE_LLD=ON -DLLVM_ENABLE_EH=ON -DLLVM_ENABLE_RTTI=ON
 
   - script: |
       set -eo pipefail
@@ -64,11 +64,11 @@ jobs:
 
   - script: |
       set -eo pipefail
-      PKG_NAME="verona-llvm-$(VERSION)-x86_64-linux-$(BuildName)-$(GOOD_HASH)"
+      PKG_NAME="verona-llvm-x86_64-linux-$(BuildName)-$(GOOD_HASH)"
       echo "##vso[task.setvariable variable=PKG_NAME]$PKG_NAME"
       mkdir -p /tmp/$PKG_NAME
-      CPUS=$(nproc --all)
-      XZ_DEFAULTS="--threads $CPUS" tar Jcf /tmp/$PKG_NAME/$PKG_NAME.tar.xz .
+      # We only cache the build directory, the sources will be checked out by the submodule
+      tar -zcf /tmp/$PKG_NAME/$PKG_NAME.tar.gz build
     failOnStderr: true
     displayName: 'Create artifact'
 

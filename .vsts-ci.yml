@@ -79,7 +79,38 @@ jobs:
         Asan: On
   steps:
   - checkout: self
-    submodules: recursive
+
+  - script: |
+      set -eo pipefail
+      # Our submodules are large, why we don't use recursive on checkout task
+      git submodule init
+      git submodule update --depth 1 --recursive
+    displayName: 'Checkout submodules'
+
+  - script: |
+      set -eo pipefail
+      if [ -z "$LLVM_HASH" ]; then
+        LLVM_HASH=$(git submodule status external/llvm-project | grep -o "[0-9a-f]\{11\}" | head -n 1)
+        echo "##vso[task.setvariable variable=LLVM_HASH]$LLVM_HASH"
+      fi
+      PKG_NAME="verona-llvm-x86_64-linux-release-$LLVM_HASH"
+      echo "##vso[task.setvariable variable=PKG_NAME]$PKG_NAME"
+    displayName: 'Check LLVM hash'
+
+  - task: UniversalPackages@0
+    displayName: 'Download Package'
+    inputs:
+      command: download
+      vstsFeed: Project%20Verona/LLVMBuild
+      vstsFeedPackage: $(PKG_NAME)
+      vstsPackageVersion: '*'
+      downloadDirectory: /tmp/
+
+  - script: |
+      set -eo pipefail
+      bash utils/llvm/setup-llvm-builddir.sh x86_64 linux release $LLVM_HASH
+    displayName: 'Setup LLVM Build dir'
+    workingDirectory: '$(Build.SourcesDirectory)'
 
   - script: |
       set -eo pipefail
@@ -104,9 +135,11 @@ jobs:
 
   - script: |
       set -eo pipefail
+      # TODO: Make all this part of the "ninja check" target
       export ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-6.0/bin/llvm-symbolizer
       export ASAN_OPTIONS="alloc_dealloc_mismatch=0 symbolize=1"
       ctest -j 4 -E "([1-9][0-9]00|[4-9]00)" --timeout 400 --output-on-failure
+      ninja check-verona-mlir
     workingDirectory: build
     failOnStderr: true
     displayName: Tests
