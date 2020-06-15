@@ -110,4 +110,9 @@ namespace mlir::verona
   // and sub-classes. Modules too, if we allow more than one per file.
   using FunctionTableT = ScopedTable<mlir::FuncOp>;
   using FunctionScopeT = ScopedTableScope<mlir::FuncOp>;
+
+  // Type Symbols. New scopes should be created when entering classes
+  // sub-classes and functions, to be used with the 'where' keyword.
+  using TypeTableT = ScopedTable<mlir::Type>;
+  using TypeScopeT = ScopedTableScope<mlir::Type>;
 }

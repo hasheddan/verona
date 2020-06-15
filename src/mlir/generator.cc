@@ -116,12 +116,20 @@ namespace mlir::verona
 
   mlir::Type Generator::parseType(const ::ast::Ast& ast)
   {
+    assert(ast->tag == NodeType::OfType && "Bad node");
     auto desc = getTypeDesc(ast);
     if (desc.empty())
       return builder.getNoneType();
 
+    // If type is in the alias table, get it
+    if (typeTable.inScope(desc))
+      return typeTable.lookup(desc);
+
+    // Else, insert into the table and return
     auto dialect = Identifier::get("type", &context);
-    return mlir::OpaqueType::get(dialect, desc, &context);
+    auto type = mlir::OpaqueType::get(dialect, desc, &context);
+    typeTable.insert(desc, type);
+    return type;
   }
 
   void Generator::parseModule(const ::ast::Ast& ast)
@@ -139,8 +147,16 @@ namespace mlir::verona
     auto name = getFunctionName(ast);
     assert(!functionTable.inScope(name) && "Redeclaration");
 
+    // Parse 'where' clause
+    auto constraints = getFunctionConstraints(ast);
+    for (auto c: constraints)
+    {
+      auto alias = getTokenValue(findNode(c, NodeType::ID));
+      auto ty = findNode(c, NodeType::OfType);
+      typeTable.insert(alias, parseType(ty.lock()));
+    }
+
     // Function type from signature
-    // FIXME: Lower 'where' type clauses
     Types types;
     auto args = getFunctionArgs(ast);
     for (auto arg : args)
@@ -159,6 +175,7 @@ namespace mlir::verona
     assert(ast->tag == NodeType::Function && "Bad node");
 
     // Declare function signature
+    TypeScopeT alias_scope(typeTable);
     auto name = getFunctionName(ast);
     if (!functionTable.inScope(name))
       parseProto(ast);

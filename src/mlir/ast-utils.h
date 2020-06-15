@@ -36,6 +36,8 @@ namespace mlir::verona
       Sig = peg::str2tag("sig"),
       Block = peg::str2tag("block"),
       OfType = peg::str2tag("oftype"),
+      Constraints = peg::str2tag("constraints"),
+      Constraint = peg::str2tag("constraint"),
       Type = peg::str2tag("type"),
       TypeRef = peg::str2tag("type_ref"),
       Params = peg::str2tag("params"),
@@ -67,5 +69,6 @@ namespace mlir::verona
   llvm::StringRef getFunctionName(::ast::WeakAst ast);
   ::ast::WeakAst getFunctionType(::ast::WeakAst ast);
   std::vector<::ast::WeakAst> getFunctionArgs(::ast::WeakAst ast);
+  std::vector<::ast::WeakAst> getFunctionConstraints(::ast::WeakAst ast);
   ::ast::WeakAst getFunctionBody(::ast::WeakAst ast);
 }

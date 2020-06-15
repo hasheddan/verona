@@ -6,6 +6,7 @@
 
 namespace mlir::verona
 {
+  // ================================================= Generic Helpers
   ::ast::WeakAst findNode(::ast::WeakAst ast, NodeType::Int type)
   {
     auto ptr = ast.lock();
@@ -32,6 +33,7 @@ namespace mlir::verona
     return findNode(ast, NodeType::OfType);
   }
 
+  // ================================================= Type Helpers
   const std::string getTypeDesc(::ast::WeakAst ast)
   {
     auto ptr = ast.lock();
@@ -61,6 +63,7 @@ namespace mlir::verona
     return desc;
   }
 
+  // ================================================= Function Helpers
   llvm::StringRef getFunctionName(::ast::WeakAst ast)
   {
     auto ptr = ast.lock();
@@ -97,6 +100,19 @@ namespace mlir::verona
     for (auto param: params->nodes)
       args.push_back(findNode(param, NodeType::NamedParam));
     return args;
+  }
+
+  std::vector<::ast::WeakAst> getFunctionConstraints(::ast::WeakAst ast)
+  {
+    auto ptr = ast.lock();
+    assert(ptr->tag == NodeType::Function && "Bad node");
+
+    std::vector<::ast::WeakAst> constraints;
+    auto sig = findNode(ptr, NodeType::Sig).lock();
+    auto consts = findNode(sig, NodeType::Constraints).lock();
+    for (auto c: consts->nodes)
+      constraints.push_back(c);
+    return constraints;
   }
 
   ::ast::WeakAst getFunctionBody(::ast::WeakAst ast)

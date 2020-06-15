@@ -48,6 +48,7 @@ namespace mlir::verona
     // Symbol tables for variables, functions and classes.
     SymbolTableT symbolTable;
     FunctionTableT functionTable;
+    TypeTableT typeTable;
 
     // Get location of an ast node
     mlir::Location getLocation(const ::ast::Ast& ast);
