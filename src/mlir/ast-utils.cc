@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// This file is licensed under the MIT license.
+// Licensed under the MIT License.
 
 #include "ast-utils.h"
+
 #include "symbol.h"
 
 namespace mlir::verona
@@ -97,7 +98,7 @@ namespace mlir::verona
     std::vector<::ast::WeakAst> args;
     auto sig = findNode(ptr, NodeType::Sig).lock();
     auto params = findNode(sig, NodeType::Params).lock();
-    for (auto param: params->nodes)
+    for (auto param : params->nodes)
       args.push_back(findNode(param, NodeType::NamedParam));
     return args;
   }
@@ -110,7 +111,7 @@ namespace mlir::verona
     std::vector<::ast::WeakAst> constraints;
     auto sig = findNode(ptr, NodeType::Sig).lock();
     auto consts = findNode(sig, NodeType::Constraints).lock();
-    for (auto c: consts->nodes)
+    for (auto c : consts->nodes)
       constraints.push_back(c);
     return constraints;
   }

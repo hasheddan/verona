@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// This file is licensed under the MIT license.
+// Licensed under the MIT License.
 
 #ifndef VERONA_OPS
 #define VERONA_OPS

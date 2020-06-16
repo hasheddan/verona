@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// This file is licensed under the MIT license.
+// Licensed under the MIT License.
 
 #include "CLI/CLI.hpp"
 #include "ast/parser.h"
 #include "ast/path.h"
-#include "ast/sym.h"
 #include "ast/prec.h"
+#include "ast/sym.h"
 #include "dialect/VeronaDialect.h"
 #include "generator.h"
 #include "mlir/InitAllDialects.h"
@@ -152,7 +152,8 @@ int main(int argc, char** argv)
       if (!err.empty())
       {
         std::cerr << "ERROR: cannot parse Verona file " << filename.str()
-                  << std::endl << err.to_s() << std::endl;
+                  << std::endl
+                  << err.to_s() << std::endl;
         return 1;
       }
       // Parse AST file into MLIR

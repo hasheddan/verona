@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// This file is licensed under the MIT license.
+// Licensed under the MIT License.
 
 #include "generator.h"
 
@@ -149,7 +149,7 @@ namespace mlir::verona
 
     // Parse 'where' clause
     auto constraints = getFunctionConstraints(ast);
-    for (auto c: constraints)
+    for (auto c : constraints)
     {
       auto alias = getTokenValue(findNode(c, NodeType::ID));
       auto ty = findNode(c, NodeType::OfType);
