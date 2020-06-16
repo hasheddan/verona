@@ -2,17 +2,12 @@
 
 This is a prototype for the Verona MLIR dialect.
 
-## Building
-
-Build Verona with additional CMake options:
-
-* __-DEXPERIMENTAL_MLIR_COMPILER=True__
-* __-DLLVM_BUILD=/absolute/path/to/llvm-projects/build__
+## Building LLVM
 
 Build LLVM with the following options:
 
 ```bash
-$ $ cmake -G Ninja ../llvm \
+$ cmake -G Ninja ../llvm \
         -DLLVM_ENABLE_PROJECTS=mlir \
         -DLLVM_TARGETS_TO_BUILD="X86" \
         -DCMAKE_BUILD_TYPE=Debug \
