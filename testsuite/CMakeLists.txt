@@ -104,6 +104,7 @@ add_custom_target(update-dump COMMAND ${CMAKE_COMMAND}
   -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
   -P ${CMAKE_CURRENT_SOURCE_DIR}/update-dump.cmake)
 
-# Builds the new experimental MLIR based compiler
-# Enable with -DEXPERIMENTAL_MLIR_COMPILER=True
-add_subdirectory(mlir)
+# Some builds (ex. clang format) don't need LLVM
+if(NOT DISABLE_LLVM_BUILD)
+  add_subdirectory(mlir)
+endif()
