@@ -256,8 +256,6 @@ namespace mlir::verona
         return parseAssign(ast);
       case NodeType::Call:
         return parseCall(ast);
-      case NodeType::Let:
-        return parseLet(ast);
       default:
         throw std::runtime_error("Node not implemented yet: " + ast->name);
     }
@@ -282,26 +280,15 @@ namespace mlir::verona
   {
     assert(ast->tag == NodeType::Assign && "Bad node");
 
-    // The left-hand side must be an assignable value
-    auto lhs = parseNode(ast->nodes[0]);
-
-    // FIXME: For now this is only a variable and there are some redundancy
-    // in the code.
+    // Must be a Let declaring a variable (for now).
     auto let = findNode(ast, NodeType::Let);
-    llvm::StringRef name = findNode(let, NodeType::Local).lock()->token;
+    auto local = findNode(let, NodeType::Local);
+    llvm::StringRef name = getTokenValue(local);
 
     // The right-hand side can be any expression
     // This is the value and we update the variable
     auto rhs = parseNode(ast->nodes[1]);
-    updateVariable(name, rhs);
-  }
-
-  mlir::Value Generator::parseLet(const ::ast::Ast& ast)
-  {
-    assert(ast->tag == NodeType::Let && "Bad node");
-    assert(ast->nodes[0]->tag == NodeType::Local && "Bad node");
-    llvm::StringRef name = findNode(ast, NodeType::Local).lock()->token;
-    declareVariable(name, mlir::Value());
+    declareVariable(name, rhs);
     return symbolTable.lookup(name);
   }
 

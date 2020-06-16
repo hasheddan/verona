@@ -80,7 +80,6 @@ namespace mlir::verona
     // Specific parsers (there will be more).
     mlir::Value parseAssign(const ::ast::Ast& ast);
     mlir::Value parseCall(const ::ast::Ast& ast);
-    mlir::Value parseLet(const ::ast::Ast& ast);
 
     // Wrappers for unary/binary operands
     mlir::Value genOperation(
